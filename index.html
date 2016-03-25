@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PouchDB Attachments Sync Test</title>
+  </head>
+  <body>
+    <h1>PouchDB Attachments Sync Test</h1>
+
+    <p>
+      Current PouchDB downloads all attachments from all revisions when replicating
+      from a remote repository, instead of smartly checking what attachments
+      already exist locally
+    </p>
+
+    <h2>Test Case</h2>
+
+    <p>
+      You need a CouchDB running to reproduce the issue. We assume we have
+      one at <a href="http://localhost:5984">http://localhost:5984</a> with
+      <a href="http://l:5984/_utils/config.html">cors.origins</a> set to
+      <code>*</code>
+    </p>
+
+    <ol>
+      <li>
+        In CouchDB
+        <ol>
+          <li>Create a database <code>sync-test</code> in your CouchDB</li>
+          <li>Create document <code>{"_id": "profile"}</code></li>
+        </ol>
+      </li>
+      <li>
+        In Browser console
+        <ol>
+          <li>Run <code>var db = new PouchDB('mydb')</code></li>
+          <li>Run <code>db.replicate.from('http://localhost:5984/sync-test', {live: true})</code></li>
+        </ol>
+      </li>
+      <li>
+        In CouchDB Futon
+        <ol>
+          <li>Upload attachment at <a href="http://localhost:5984/_utils/document.html?sync-test/profile">http://localhost:5984/_utils/document.html?sync-test/profile</a> (You can use <a href="./low-profile-dog-1.png">low-profile-dog-1.png</a> if you like)</li>
+          <li>Upload another attachment at <a href="http://localhost:5984/_utils/document.html?sync-test/profile">http://localhost:5984/_utils/document.html?sync-test/profile</a> (You can use <a href="./low-profile-dog-2.png">low-profile-dog-2.png</a> if you like)</li>
+        </ol>
+      </li>
+      <li>
+        In Browser Web Developer tools, check the network tab. You should see that <code>low-profile-dog-1.png</code> (or what ever your 1st attachment was)
+        was loaded twice by PouchDB, which is inefficient
+      </li>
+    </ol>
+
+    <p>
+      We have uploaded all requests for reference as <a href="./pouchdb-requests.har">pouchdb-requests.har</a>.
+      You can open the file direcly in Chrome, or you can upload it to
+      <a href="https://ericduran.github.io/chromeHAR/">ericduran.github.io/chromeHAR</a>
+    </p>
+
+    <script src="pouchdb-5.3.1.min.js"></script>
+  </body>
+</html>
